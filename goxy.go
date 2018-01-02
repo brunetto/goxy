@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
+	"net/url"
 )
 
 var (
@@ -16,17 +17,31 @@ func init() {
 	flag.Parse()
 }
 
+// https://github.com/Gonzih/http-forward-proxy/main.go
+func copyHeaders(dst *http.Header, src *http.Header) {
+	for k, vals := range *src {
+		for _, v := range vals {
+			if k == "goxy-url" {
+				continue
+			}
+			log.Printf("Copying header %s: %s", k, v)
+			dst.Set(k, v)
+		}
+	}
+}
+
 func newDirector(r *http.Request) func(*http.Request) {
 	return func(req *http.Request) {
-		schemeOveride := r.Header.Get("goxy-scheme-override")
 
-		if schemeOveride != "" {
-			req.URL.Scheme = schemeOveride
-		} else {
-			req.URL.Scheme = "http"
+		u, err := url.Parse(r.Header.Get("goxy-url"))
+		if err != nil {
+			log.Println(err)
 		}
+		req.URL = u
 
-		req.URL.Host = r.Host
+		log.Println("New:", u.String())
+		log.Println("New:", req.URL.String())
+
 
 		reqLog, err := httputil.DumpRequestOut(req, false)
 		if err != nil {
