@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
+	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"net/url"
-	"io"
+	"strconv"
 	"strings"
 )
 
@@ -18,40 +18,7 @@ func init() {
 	flag.Parse()
 }
 
-
-
-//func newDirector(r *http.Request) func(*http.Request) {
-//	return func(req *http.Request) {
-//
-//		u, err := url.Parse(r.Header.Get("goxy-url"))
-//		if err != nil {
-//			log.Println(err)
-//		}
-//		req.URL = u
-//
-//		log.Println("New:", u.String())
-//		log.Println("New:", req.URL.String())
-//
-//
-//		reqLog, err := httputil.DumpRequestOut(req, false)
-//		if err != nil {
-//			log.Printf("Got error %s\n %+v\n", err.Error(), req)
-//		}
-//
-//		log.Println(string(reqLog))
-//	}
-//}
-//
-//func proxyHandler(w http.ResponseWriter, r *http.Request) {
-//	proxy := &httputil.ReverseProxy{
-//		Transport: &http.Transport{},
-//		Director:  newDirector(r),
-//	}
-//	proxy.ServeHTTP(w, r)
-//}
-
-// https://github.com/Gonzih/http-forward-proxy/main.go
-func copyHeaders(dst *http.Header, src *http.Header, direction string ) {
+func copyHeaders(dst *http.Header, src *http.Header, direction string) {
 	for k, vals := range *src {
 		for _, v := range vals {
 			if strings.ToLower(k) == "goxy-url" {
@@ -63,7 +30,7 @@ func copyHeaders(dst *http.Header, src *http.Header, direction string ) {
 	}
 }
 
-func proxyHandler (w http.ResponseWriter, r *http.Request) {
+func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 	u, err := url.Parse(r.Header.Get("goxy-url"))
 	if err != nil {
